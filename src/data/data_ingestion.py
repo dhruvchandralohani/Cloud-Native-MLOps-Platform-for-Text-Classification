@@ -80,7 +80,7 @@ def main():
         
         # s3 = s3_connection.s3_operations("s3-demo-bucket-reviews", "*", "*")
         # df = s3.fetch_file_from_s3("data.csv")
-        df = pd.read_csv(r"D:\Virtual Environments\PyTorch\Projects\MLOPS\Capstone-Project\notebooks\data.csv")
+        df = pd.read_csv('https://github.com/dhruvchandralohani/Capstone-Project/raw/main/notebooks/data.csv')
 
 
 
