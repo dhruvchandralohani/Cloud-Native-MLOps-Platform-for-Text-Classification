@@ -1,11 +1,8 @@
-import setuptools
-import os
 import re
 import string
 import pandas as pd
 pd.set_option('future.no_silent_downcasting', True)
 
-import numpy as np
 import mlflow
 import mlflow.sklearn
 import dagshub

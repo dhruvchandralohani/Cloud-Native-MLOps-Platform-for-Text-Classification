@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/Virtual%20Environments/PyTorch/Projects/MLOPS/Capstone-Project/mlruns/779017280284157690/a05ea09d248c4395a2049f6d0835afab/artifacts
+end_time: 1764048428102
+entry_point_name: ''
+experiment_id: '779017280284157690'
+lifecycle_stage: active
+run_id: a05ea09d248c4395a2049f6d0835afab
+run_name: enthused-toad-882
+run_uuid: a05ea09d248c4395a2049f6d0835afab
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764048408470
+status: 3
+tags: []
+user_id: dhruv
