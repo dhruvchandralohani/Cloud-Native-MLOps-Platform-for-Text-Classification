@@ -181,6 +181,36 @@ Once deployed, the `flask_app` serves the "Production" model.
         -   **TensorFlow Serving / TorchServe**: Specialized high-performance servers for TF/PyTorch models (complex to set up).
         -   **BentoML**: Framework specifically for packaging and serving ML models.
 
+---
+
+## 5. Monitoring (Prometheus & Grafana)
+
+The project includes built-in observability to track model performance and system health in production.
+
+### Workflow:
+1.  **Metrics Exposure (Flask App)**:
+    -   The `flask_app/app.py` uses the `prometheus_client` library to define and expose custom metrics.
+    -   **Endpoint**: `/metrics` (Standard Prometheus scraping endpoint).
+    -   **Key Metrics**:
+        -   `app_request_count`: Total number of requests (broken down by method/endpoint).
+        -   `app_request_latency_seconds`: Histogram of response times.
+        -   `model_prediction_count`: Tracks the distribution of predictions (e.g., how many "Positive" vs "Negative").
+2.  **Metric Scraping (Prometheus)**: 
+    -   A Prometheus server (deployed separately in the cluster) scrapes the `/metrics` endpoint of the Flask Pods at regular intervals.
+3.  **Visualization (Grafana)**:
+    -   Grafana queries the Prometheus server to display dashboards.
+    -   **Use Case**: Visualize real-time traffic, latency spikes, or data drift (e.g., sudden increase in "Negative" predictions).
+
+### Why Prometheus & Grafana?
+-   **Standardization**: They are the de facto standard for Kubernetes monitoring.
+-   **Pull Model**: Prometheus "pulls" metrics, meaning your app doesn't crash if the monitoring server goes down.
+-   **Alerting**: Easy to set up alerts (e.g., "Latency > 500ms for 5 minutes").
+
+### Alternatives:
+-   **ELK Stack (Elasticsearch, Logstash, Kibana)**: Better for *logs* (text search) but heavier for *metrics* (time-series).
+-   **Datadog / New Relic**: Full-featured commercial SaaS platforms. Easier to set up but can be expensive.
+-   **CloudWatch**: AWS-native monitoring. Good integration with AWS services but less flexible for custom app metrics than Prometheus.
+
 --------
 
 > Project based on the [cookiecutter data science project template](https://drivendata.github.io/cookiecutter-data-science/).#cookiecutterdatascience
