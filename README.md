@@ -1,4 +1,4 @@
-# Capstone Project
+# Cloud Native MLOps Platform for Text Classification
 
 End-to-end text classification MlOps project.
 
