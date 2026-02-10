@@ -69,25 +69,25 @@ def normalize_text(text):
 
 # Below code block is for local use
 # -------------------------------------------------------------------------------------
-# mlflow.set_tracking_uri('https://dagshub.com/dhruvchandralohani/Cloud-Native-MLOps-Platform-for-Text-Classification.mlflow')
-# dagshub.init(repo_owner='dhruvchandralohani', repo_name='Cloud-Native-MLOps-Platform-for-Text-Classification', mlflow=True)
+mlflow.set_tracking_uri('https://dagshub.com/dhruvchandralohani/Cloud-Native-MLOps-Platform-for-Text-Classification.mlflow')
+dagshub.init(repo_owner='dhruvchandralohani', repo_name='Cloud-Native-MLOps-Platform-for-Text-Classification', mlflow=True)
 # -------------------------------------------------------------------------------------
 
 # Below code block is for production use
 # -------------------------------------------------------------------------------------
 # Set up DagsHub credentials for MLflow tracking
-dagshub_token = os.getenv("CAPSTONE_TEST")
-if not dagshub_token:
-    raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
+# dagshub_token = os.getenv("CAPSTONE_TEST")
+# if not dagshub_token:
+#     raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
 
-os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
-os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+# os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+# os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
-dagshub_url = "https://dagshub.com"
-repo_owner = "dhruvchandralohani"
-repo_name = "Cloud-Native-MLOps-Platform-for-Text-Classification"
-# Set up MLflow tracking URI
-mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
+# dagshub_url = "https://dagshub.com"
+# repo_owner = "dhruvchandralohani"
+# repo_name = "Cloud-Native-MLOps-Platform-for-Text-Classification"
+# # Set up MLflow tracking URI
+# mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # -------------------------------------------------------------------------------------
 
 
@@ -128,13 +128,33 @@ def get_latest_model_version(model_name):
     latest_version = client.get_latest_versions(model_name, stages=["Production"])
     if not latest_version:
         latest_version = client.get_latest_versions(model_name, stages=["None"])
-    return latest_version[0].version if latest_version else None
+    return latest_version[0] if latest_version else None
 
-model_version = get_latest_model_version(model_name)
-model_uri = f'models:/{model_name}/{model_version}'
-print(f"Fetching model from: {model_uri}")
-model = mlflow.pyfunc.load_model(model_uri)
-vectorizer = pickle.load(open('models/vectorizer.pkl', 'rb'))
+latest_version = get_latest_model_version(model_name)
+if latest_version:
+    model_version = latest_version.version
+    model_uri = f'models:/{model_name}/{model_version}'
+    print(f"Fetching model from: {model_uri}")
+    model = mlflow.pyfunc.load_model(model_uri)
+
+    # Fetch vectorizer from the same run as the model
+    run_id = latest_version.run_id
+    if run_id:
+        try:
+            print(f"Fetching vectorizer from run_id: {run_id}")
+            client = mlflow.MlflowClient()
+            local_path = client.download_artifacts(run_id, "vectorizer.pkl", dst_path=".")
+            vectorizer = pickle.load(open(local_path, 'rb'))
+        except Exception as e:
+            print(f"Error loading vectorizer from MLflow: {e}. Falling back to local 'models/vectorizer.pkl'")
+            vectorizer = pickle.load(open('models/vectorizer.pkl', 'rb'))
+    else:
+        print("No run_id found for model version. Falling back to local 'models/vectorizer.pkl'")
+        vectorizer = pickle.load(open('models/vectorizer.pkl', 'rb'))
+else:
+    print("No model version found.")
+    model = None
+    vectorizer = None
 
 # Routes
 @app.route("/")
