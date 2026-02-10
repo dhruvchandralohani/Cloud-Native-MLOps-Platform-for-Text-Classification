@@ -1,9 +1,8 @@
 from flask import Flask, render_template, request
 import mlflow
 import pickle
-import os
 import pandas as pd
-from prometheus_client import Counter, Histogram, generate_latest, CollectorRegistry, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, generate_latest, CollectorRegistry, CONTENT_TYPE_LATEST, ProcessCollector
 import time
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
@@ -69,25 +68,25 @@ def normalize_text(text):
 
 # Below code block is for local use
 # -------------------------------------------------------------------------------------
-# mlflow.set_tracking_uri('https://dagshub.com/dhruvchandralohani/Capstone-Project.mlflow')
-# dagshub.init(repo_owner='dhruvchandralohani', repo_name='Capstone-Project', mlflow=True)
+mlflow.set_tracking_uri('https://dagshub.com/dhruvchandralohani/Cloud-Native-MLOps-Platform-for-Text-Classification.mlflow')
+dagshub.init(repo_owner='dhruvchandralohani', repo_name='Cloud-Native-MLOps-Platform-for-Text-Classification', mlflow=True)
 # -------------------------------------------------------------------------------------
 
 # Below code block is for production use
 # -------------------------------------------------------------------------------------
 # Set up DagsHub credentials for MLflow tracking
-dagshub_token = os.getenv("CAPSTONE_TEST")
-if not dagshub_token:
-    raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
+# dagshub_token = os.getenv("CAPSTONE_TEST")
+# if not dagshub_token:
+#     raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
 
-os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
-os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+# os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+# os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
-dagshub_url = "https://dagshub.com"
-repo_owner = "dhruvchandralohani"
-repo_name = "Capstone-Project"
-# Set up MLflow tracking URI
-mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
+# dagshub_url = "https://dagshub.com"
+# repo_owner = "dhruvchandralohani"
+# repo_name = "Capstone-Project"
+# # Set up MLflow tracking URI
+# mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # -------------------------------------------------------------------------------------
 
 
@@ -98,13 +97,23 @@ app = Flask(__name__)
 
 # Create a custom registry
 registry = CollectorRegistry()
+ProcessCollector(registry=registry)
 
 # Define your custom metrics using this registry
 REQUEST_COUNT = Counter(
-    "app_request_count", "Total number of requests to the app", ["method", "endpoint"], registry=registry
+    "app_request_count", "Total number of requests to the app", ["method", "endpoint", "status"], registry=registry
 )
 REQUEST_LATENCY = Histogram(
     "app_request_latency_seconds", "Latency of requests in seconds", ["endpoint"], registry=registry
+)
+PREPROCESSING_TIME = Histogram(
+    "app_preprocessing_latency_seconds", "Latency of preprocessing in seconds", ["phase"], buckets=(0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0), registry=registry
+)
+INFERENCE_TIME = Histogram(
+    "app_inference_latency_seconds", "Latency of model inference in seconds", buckets=(0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0), registry=registry
+)
+INPUT_LENGTH = Histogram(
+    "app_input_length_words", "Length of input text in words", buckets=(5, 10, 25, 50, 100, 250, 500, 1000), registry=registry
 )
 PREDICTION_COUNT = Counter(
     "model_prediction_count", "Count of predictions for each class", ["prediction"], registry=registry
@@ -129,35 +138,53 @@ vectorizer = pickle.load(open('models/vectorizer.pkl', 'rb'))
 # Routes
 @app.route("/")
 def home():
-    REQUEST_COUNT.labels(method="GET", endpoint="/").inc()
     start_time = time.time()
-    response = render_template("index.html", result=None)
-    REQUEST_LATENCY.labels(endpoint="/").observe(time.time() - start_time)
-    return response
+    try:
+        response = render_template("index.html", result=None)
+        REQUEST_COUNT.labels(method="GET", endpoint="/", status=200).inc()
+        REQUEST_LATENCY.labels(endpoint="/").observe(time.time() - start_time)
+        return response
+    except Exception:
+        REQUEST_COUNT.labels(method="GET", endpoint="/", status=500).inc()
+        raise
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    REQUEST_COUNT.labels(method="POST", endpoint="/predict").inc()
     start_time = time.time()
+    try:
+        text = request.form["text"]
+        
+        # Measure input length
+        word_count = len(text.split())
+        INPUT_LENGTH.observe(word_count)
 
-    text = request.form["text"]
-    # Clean text
-    text = normalize_text(text)
-    # Convert to features
-    features = vectorizer.transform([text])
-    features_df = pd.DataFrame(features.toarray(), columns=[str(i) for i in range(features.shape[1])])
+        # Preprocessing Latency
+        prep_start = time.time()
+        # Clean text
+        text = normalize_text(text)
+        # Convert to features
+        features = vectorizer.transform([text])
+        features_df = pd.DataFrame(features.toarray(), columns=[str(i) for i in range(features.shape[1])])
+        PREPROCESSING_TIME.labels(phase="transform").observe(time.time() - prep_start)
 
-    # Predict
-    result = model.predict(features_df)
-    prediction = result[0]
+        # Predicting Latency
+        inf_start = time.time()
+        result = model.predict(features_df)
+        prediction = result[0]
+        INFERENCE_TIME.observe(time.time() - inf_start)
 
-    # Increment prediction count metric
-    PREDICTION_COUNT.labels(prediction=str(prediction)).inc()
+        # Increment prediction count metric
+        PREDICTION_COUNT.labels(prediction=str(prediction)).inc()
+        
+        REQUEST_COUNT.labels(method="POST", endpoint="/predict", status=200).inc()
 
-    # Measure latency
-    REQUEST_LATENCY.labels(endpoint="/predict").observe(time.time() - start_time)
+        # Measure total latency
+        REQUEST_LATENCY.labels(endpoint="/predict").observe(time.time() - start_time)
 
-    return render_template("index.html", result=prediction)
+        return render_template("index.html", result=prediction)
+    except Exception:
+        REQUEST_COUNT.labels(method="POST", endpoint="/predict", status=500).inc()
+        raise
 
 @app.route("/metrics", methods=["GET"])
 def metrics():

@@ -26,11 +26,11 @@ warnings.filterwarnings("ignore")
 
 # ========================== CONFIGURATION ==========================
 CONFIG = {
-    "data_path": "notebooks/data.csv",
+    "data_path": "IMDB.csv",
     "test_size": 0.2,
-    "mlflow_tracking_uri": "https://dagshub.com/dhruvchandralohani/Capstone-Project.mlflow",
+    "mlflow_tracking_uri": "https://dagshub.com/dhruvchandralohani/Cloud-Native-MLOps-Platform-for-Text-Classification.mlflow",
     "dagshub_repo_owner": "dhruvchandralohani",
-    "dagshub_repo_name": "Capstone-Project",
+    "dagshub_repo_name": "Cloud-Native-MLOps-Platform-for-Text-Classification",
     "experiment_name": "Bow vs TfIdf"
 }
 

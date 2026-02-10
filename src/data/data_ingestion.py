@@ -1,5 +1,4 @@
 # data ingestion
-import numpy as np
 import pandas as pd
 pd.set_option('future.no_silent_downcasting', True)
 
@@ -47,7 +46,6 @@ def load_data(data_url: str) -> pd.DataFrame:
 def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     """Preprocess the data."""
     try:
-        # df.drop(columns=['tweet_id'], inplace=True)
         logging.info("pre-processing...")
         final_df = df[df['sentiment'].isin(['positive', 'negative'])]
         final_df['sentiment'] = final_df['sentiment'].replace({'positive': 1, 'negative': 0})
@@ -78,9 +76,9 @@ def main():
         test_size = params['data_ingestion']['test_size']
         # test_size = 0.2
         
-        # s3 = s3_connection.s3_operations("s3-demo-bucket-reviews", "*", "*")
-        # df = s3.fetch_file_from_s3("data.csv")
-        df = pd.read_csv('https://github.com/dhruvchandralohani/Capstone-Project/raw/main/notebooks/data.csv')
+        # s3 = s3_connection.s3_operations("s3-demo-bucket-review", "*", "*")
+        # df = s3.fetch_file_from_s3("IMDB.csv")
+        df = pd.read_csv('https://github.com/dhruvchandralohani/Cloud-Native-MLOps-Platform-for-Text-Classification/raw/main/notebooks/IMDB.csv')
 
 
 

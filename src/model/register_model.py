@@ -16,25 +16,25 @@ warnings.filterwarnings("ignore")
 # Below code block is for production use
 # -------------------------------------------------------------------------------------
 # Set up DagsHub credentials for MLflow tracking
-dagshub_token = os.getenv("CAPSTONE_TEST")
-if not dagshub_token:
-    raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
+# dagshub_token = os.getenv("CAPSTONE_TEST")
+# if not dagshub_token:
+#     raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
 
-os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
-os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+# os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+# os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
-dagshub_url = "https://dagshub.com"
-repo_owner = "dhruvchandralohani"
-repo_name = "Capstone-Project"
-# Set up MLflow tracking URI
-mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
+# dagshub_url = "https://dagshub.com"
+# repo_owner = "dhruvchandralohani"
+# repo_name = "Capstone-Project"
+# # Set up MLflow tracking URI
+# mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 # -------------------------------------------------------------------------------------
 
 
 # Below code block is for local use
 # -------------------------------------------------------------------------------------
-# mlflow.set_tracking_uri('https://dagshub.com/dhruvchandralohani/Capstone-Project.mlflow')
-# dagshub.init(repo_owner='dhruvchandralohani', repo_name='Capstone-Project', mlflow=True)
+mlflow.set_tracking_uri('https://dagshub.com/dhruvchandralohani/Cloud-Native-MLOps-Platform-for-Text-Classification.mlflow')
+dagshub.init(repo_owner='dhruvchandralohani', repo_name='Cloud-Native-MLOps-Platform-for-Text-Classification', mlflow=True)
 # -------------------------------------------------------------------------------------
 
 

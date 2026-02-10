@@ -20,10 +20,10 @@ warnings.filterwarnings("ignore")
 # os.environ["MLFLOW_DISABLE_ARTIFACTS_DOWNLOAD"] = "1"
 
 # Set MLflow Tracking URI & DAGsHub integration
-MLFLOW_TRACKING_URI = "https://dagshub.com/dhruvchandralohani/Capstone-Project.mlflow"
-dagshub.init(repo_owner="dhruvchandralohani", repo_name="Capstone-Project", mlflow=True)
+MLFLOW_TRACKING_URI = "https://dagshub.com/dhruvchandralohani/Cloud-Native-MLOps-Platform-for-Text-Classification.mlflow"
+dagshub.init(repo_owner="dhruvchandralohani", repo_name="Cloud-Native-MLOps-Platform-for-Text-Classification", mlflow=True)
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-mlflow.set_experiment("LoR Hyperparameter Tuning")
+mlflow.set_experiment("LoR with TF-IDF Vectorization & Hyperparameter Tuning")
 
 
 # ==========================
@@ -72,13 +72,13 @@ def train_and_log_model(X_train, X_test, y_train, y_test, vectorizer):
     """Trains a Logistic Regression model with GridSearch and logs results to MLflow."""
     
     param_grid = {
-        "C": [0.1, 1, 10],
+        "C": [0.01, 0.1, 1, 10, 100],
         "penalty": ["l1", "l2"],
         "solver": ["liblinear"]
     }
     
     with mlflow.start_run():
-        grid_search = GridSearchCV(LogisticRegression(), param_grid, cv=5, scoring="f1", n_jobs=-1)
+        grid_search = GridSearchCV(LogisticRegression(), param_grid, cv=5, scoring="f1")
         grid_search.fit(X_train, y_train)
 
         # Log all hyperparameter tuning runs
@@ -129,5 +129,5 @@ def train_and_log_model(X_train, X_test, y_train, y_test, vectorizer):
 # Main Execution
 # ==========================
 if __name__ == "__main__":
-    (X_train, X_test, y_train, y_test), vectorizer = load_and_prepare_data("notebooks/data.csv")
+    (X_train, X_test, y_train, y_test), vectorizer = load_and_prepare_data("IMDB.csv")
     train_and_log_model(X_train, X_test, y_train, y_test, vectorizer)
