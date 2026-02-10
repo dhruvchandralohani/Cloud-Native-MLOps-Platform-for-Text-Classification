@@ -14,7 +14,7 @@ def promote_model():
 
     dagshub_url = "https://dagshub.com"
     repo_owner = "dhruvchandralohani"
-    repo_name = "Capstone-Project"
+    repo_name = "Cloud-Native-MLOps-Platform-for-Text-Classification"
 
     # Set up MLflow tracking URI
     mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
