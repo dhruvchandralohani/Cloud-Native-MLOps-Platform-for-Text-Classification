@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-app
+  name: flask-app-text-classification
   labels:
-    app: flask-app
+    app: flask-app-text-classification
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: flask-app
+      app: flask-app-text-classification
   template:
     metadata:
       labels:
-        app: flask-app
+        app: flask-app-text-classification
     spec:
       containers:
-      - name: flask-app
-        image: 687407529776.dkr.ecr.ap-south-1.amazonaws.com/flask-app:latest
+      - name: flask-app-text-classification
+        image: 687407529776.dkr.ecr.ap-south-1.amazonaws.com/flask-app-text-classification:latest
         ports:
         - containerPort: 5000
         resources:
@@ -41,7 +41,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: flask-app
+    app: flask-app-text-classification
   ports:
     - name: http
       protocol: TCP
