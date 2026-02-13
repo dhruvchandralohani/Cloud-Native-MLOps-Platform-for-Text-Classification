@@ -30,7 +30,7 @@ spec:
         - name: TEXT_CLASSIFICATION_TOKEN
           valueFrom:
             secretKeyRef:
-              name: TEXT_CLASSIFICATION_TOKEN_SECRET
+              name: text-classification-secret
               key: TEXT_CLASSIFICATION_TOKEN
 
 ---

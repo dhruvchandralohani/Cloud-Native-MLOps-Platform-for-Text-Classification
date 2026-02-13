@@ -86,7 +86,7 @@ jobs:
 
       - name: Create Kubernetes Secret
         run: |
-          kubectl create secret generic TEXT_CLASSIFICATION_TOKEN_SECRET \
+          kubectl create secret generic text-classification-secret \
             --from-literal=TEXT_CLASSIFICATION_TOKEN=${{ secrets.TEXT_CLASSIFICATION_TOKEN }} --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy to EKS
