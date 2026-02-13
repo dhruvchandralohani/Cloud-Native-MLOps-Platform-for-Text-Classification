@@ -23,6 +23,7 @@ The project is organized efficiently to separate data, code, configuration, and 
 | **`LICENSE`** | Legal license file defining how the project code can be used. |
 | **`Makefile`** | Utility script to run common tasks (e.g., `make data`, `make lint`) using simple commands. |
 | **`README.md`** | Top-level documentation for developers, explaining the project goal and organization. |
+| **`Grafana Dashboard.json`** | JSON export of the Grafana dashboard for monitoring model metrics. |
 | **`data/`** | Stores datasets at various stages. Managed by DVC. |
 | &nbsp;&nbsp;`raw/` | Original immutable data dump (downloaded via `data_ingestion.py`). |
 | &nbsp;&nbsp;`interim/` | Transformed data (cleaned text) used for feature engineering. |
@@ -57,11 +58,11 @@ The project is organized efficiently to separate data, code, configuration, and 
 | **`setup.py`** | Script to make the project pip-installable so `src` can be imported as a module. |
 | **`src/`** | Source code for use in this project. |
 | &nbsp;&nbsp;`__init__.py` | Makes `src` a Python module. |
-| &nbsp;&nbsp;`logger.py` | (Implicit in imports) Logging configuration utility. |
-| &nbsp;&nbsp;`connections/` | (Implicit) S3 connection helpers. |
+| &nbsp;&nbsp;`logger/` | Logging configuration utility. |
+| &nbsp;&nbsp;`connections/` | Connection helpers (`s3_connection.py` for S3). |
 | &nbsp;&nbsp;`data/` | Scripts to download or generate data (`data_ingestion.py`, `data_preprocessing.py`). |
 | &nbsp;&nbsp;`features/` | Scripts to turn raw data into features (`feature_engineering.py`). |
-| &nbsp;&nbsp;`models/` | Scripts to train and evaluate models (`model_building.py`, `model_evaluation.py`). |
+| &nbsp;&nbsp;`model/` | Scripts to train and evaluate models (`model_building.py`, `model_evaluation.py`). |
 | &nbsp;&nbsp;`visualization/` | Scripts to create visualizations (`visualize.py`). |
 | **`test_environment.py`** | Script to check if the Python environment is set up correctly (Python version). |
 | **`tests/`** | Directory containing unit tests. |
@@ -93,10 +94,10 @@ The project uses **DVC (Data Version Control)** to manage the local manufacturin
 
 ### Step 3: Feature Engineering
 - **Script**: `src/features/feature_engineering.py`
-- **Action**: Applies **Bag of Words (CountVectorizer)** to convert text to numerical vectors.
-- **Why**: Machine learning models require numerical input. BoW is a simple, effective baseline for text classification.
+- **Action**: Applies **TF-IDF Vectorizer** to convert text to numerical vectors.
+- **Why**: Machine learning models require numerical input. TF-IDF weighs words by importance, helping to filter out common but less meaningful terms.
 - **Alternatives**:
-    -   *TF-IDF*: Weighs words by importance (better for filtering common terms).
+    -   *Bag of Words (CountVectorizer)*: Simple frequency-based approach, but ignores word importance.
     -   *Word Embeddings (Word2Vec, GloVe)*: Captures semantic meaning but requires more data/computation.
     -   *Transformer Embeddings (BERT)*: State-of-the-art context awareness but computationally expensive.
 
@@ -194,6 +195,9 @@ The project includes built-in observability to track model performance and syste
     -   **Key Metrics**:
         -   `app_request_count`: Total number of requests (broken down by method/endpoint).
         -   `app_request_latency_seconds`: Histogram of response times.
+        -   `app_preprocessing_latency_seconds`: Latency of preprocessing steps (e.g., text cleaning, vectorization).
+        -   `app_inference_latency_seconds`: Latency of the model inference logic itself.
+        -   `app_input_length_words`: Histogram of input text length (number of words) to monitor data drift.
         -   `model_prediction_count`: Tracks the distribution of predictions (e.g., how many "Positive" vs "Negative").
 2.  **Metric Scraping (Prometheus)**: 
     -   A Prometheus server (deployed separately in the cluster) scrapes the `/metrics` endpoint of the Flask Pods at regular intervals.

@@ -1,6 +1,0 @@
-artifact_location: file:///D:/Virtual%20Environments/PyTorch/Projects/MLOPS/Capstone-Project/mlruns/779017280284157690
-creation_time: 1763988519187
-experiment_id: '779017280284157690'
-last_update_time: 1763988519187
-lifecycle_stage: active
-name: my-dvc-pipeline

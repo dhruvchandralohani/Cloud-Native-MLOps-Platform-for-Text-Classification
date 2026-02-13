@@ -3,84 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis</title>
+    <title>IMDB Review Sentiment Analyzer</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
         }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23f39c12" fill-opacity="0.05" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,144C960,149,1056,139,1152,122.7C1248,107,1344,85,1392,74.7L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: bottom;
+            pointer-events: none;
+        }
+
         .container {
-            max-width: 500px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 650px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 45px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
         }
-        h1 {
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            color: #1a1a2e;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 15px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .imdb-logo {
+            background: #f5c518;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
             color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: left;
         }
+
         textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: none;
-            font-size: 16px;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            resize: vertical;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            min-height: 140px;
         }
+
+        textarea:focus {
+            outline: none;
+            border-color: #f39c12;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.1);
+        }
+
+        textarea::placeholder {
+            color: #999;
+        }
+
         button {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 16px 32px;
             margin-top: 10px;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 12px;
             font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+
         button:hover {
-            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
         }
+
+        button:active {
+            transform: translateY(0);
+        }
+
         .result {
-            margin-top: 20px;
-            font-size: 22px;
-            font-weight: bold;
-            padding: 10px;
-            border-radius: 5px;
+            margin-top: 35px;
+            padding: 0;
+            animation: fadeIn 0.6s ease;
         }
-        .positive {
-            color: #155724;
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .negative {
-            color: #721c24;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
+
+        .result-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #999;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .result-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+            border-radius: 16px;
+            background: #fafafa;
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s ease;
+        }
+
+        .positive .result-content {
+            background: linear-gradient(135deg, #f0f9f4 0%, #e8f5ec 100%);
+            border-color: #c3e6cb;
+        }
+
+        .negative .result-content {
+            background: linear-gradient(135deg, #fef5f6 0%, #fdeef0 100%);
+            border-color: #f5c6cb;
+        }
+
+        .result-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            flex-shrink: 0;
+            animation: scaleIn 0.5s ease 0.2s both;
+        }
+
+        .positive .result-icon {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.25);
+        }
+
+        .negative .result-icon {
+            background: linear-gradient(135deg, #dc3545 0%, #e85d6a 100%);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.25);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .result-sentiment {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .positive .result-sentiment {
+            color: #1e7e34;
+        }
+
+        .negative .result-sentiment {
+            color: #bd2130;
+        }
+
+        .result-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .confidence-bar {
+            margin-top: 12px;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease 0.3s;
+            position: relative;
+        }
+
+        .positive .confidence-fill {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            width: 85%;
+        }
+
+        .negative .confidence-fill {
+            background: linear-gradient(90deg, #dc3545 0%, #e85d6a 100%);
+            width: 85%;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+
+        .star-decoration {
+            color: #f39c12;
+            margin: 0 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 25px;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .result-content {
+                flex-direction: column;
+                text-align: center;
+                padding: 25px 20px;
+            }
+
+            .result-text {
+                text-align: center;
+            }
+
+            .result-sentiment {
+                font-size: 20px;
+            }
+
+            .result-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Sentiment Analysis</h1>
+        <div class="header">
+            <h1>🎬 Movie Review Analyzer</h1>
+            <p class="subtitle">
+                <span class="imdb-logo">IMDb</span>
+                <span>Review Sentiment Detection</span>
+            </p>
+        </div>
+
         <form action="/predict" method="POST">
-            <label for="text">Write text:</label><br>
-            <textarea id="text" name="text" rows="5" placeholder="Enter your text here..."></textarea><br>
-            <button type="submit">Predict</button>
+            <div class="form-group">
+                <label for="text">📝 Enter Your Movie Review</label>
+                <textarea 
+                    id="text" 
+                    name="text" 
+                    rows="5" 
+                    placeholder="Share your thoughts about the movie... Was it a masterpiece or a disappointment?"
+                    required
+                ></textarea>
+            </div>
+            <button type="submit">🔍 Analyze Sentiment</button>
         </form>
 
         {% if result is not none %}
             <div class="result {% if result == 1 %}positive{% else %}negative{% endif %}">
-                {% if result == 1 %}
-                    😊 Positive Sentiment
-                {% else %}
-                    😞 Negative Sentiment
-                {% endif %}
+                <div class="result-label">Analysis Result</div>
+                <div class="result-content">
+                    <div class="result-icon">
+                        {% if result == 1 %}😊{% else %}😞{% endif %}
+                    </div>
+                    <div class="result-text">
+                        <div class="result-sentiment">
+                            {% if result == 1 %}Positive Sentiment{% else %}Negative Sentiment{% endif %}
+                        </div>
+                        <div class="result-description">
+                            {% if result == 1 %}
+                            This review expresses favorable opinions and satisfaction with the movie.
+                            {% else %}
+                            This review expresses criticism and dissatisfaction with the movie.
+                            {% endif %}
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         {% endif %}
+
+        <div class="footer">
+            <span class="star-decoration">⭐</span>
+            Powered by Machine Learning
+            <span class="star-decoration">⭐</span>
+        </div>
     </div>
 
 </body>
