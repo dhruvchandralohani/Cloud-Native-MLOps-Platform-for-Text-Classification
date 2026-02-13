@@ -16,9 +16,6 @@ import warnings
 warnings.simplefilter("ignore", UserWarning)
 warnings.filterwarnings("ignore")
 
-# Suppress MLflow artifact download warnings
-# os.environ["MLFLOW_DISABLE_ARTIFACTS_DOWNLOAD"] = "1"
-
 # Set MLflow Tracking URI & DAGsHub integration
 MLFLOW_TRACKING_URI = "https://dagshub.com/dhruvchandralohani/Cloud-Native-MLOps-Platform-for-Text-Classification.mlflow"
 dagshub.init(repo_owner="dhruvchandralohani", repo_name="Cloud-Native-MLOps-Platform-for-Text-Classification", mlflow=True)

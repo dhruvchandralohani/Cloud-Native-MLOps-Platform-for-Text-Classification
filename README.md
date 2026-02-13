@@ -4,7 +4,7 @@ End-to-end text classification MlOps project.
 
 # Project Guide
 
-This guide provides a comprehensive overview of the MLOps Capstone Project, detailing its structure and the sequence of operations for data processing, model training, serving, and continuous integration/deployment. It also explains the rationale behind each technical decision and potential alternatives.
+This guide provides a comprehensive overview of the MLOps text classification project, detailing its structure and the sequence of operations for data processing, model training, serving, and continuous integration/deployment. It also explains the rationale behind each technical decision and potential alternatives.
 
 ## 1. Project Structure
 
